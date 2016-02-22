@@ -5,3 +5,4 @@ All notable changes to this project will be documented in this file. This change
 ### Changed
 - Created repo and changelog
 - Added basic fetch, store, and delete functionality
+- Added basic fethc and store for json

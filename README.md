@@ -72,7 +72,17 @@ async versions of `fetch`, `ffetch`, `store`, and `delete` are exposed as
 
 
 ## License
+### JSON
 
+A light JSON wrapper using clojure.data.json is exposed via `riak-client.json`.
+```clojure
+user=> (require '[riak-client.json :as json-client])
+nil
+user=> (json-client/store-json conn ["foo" "bar"] {:a 1 :b 2 :c [1 2 3]})
+#object[com.basho.riak.client.api.commands.kv.StoreValue$Response 0x31167838 "{location: {namespace: {type: default, bucket: foo}, key: bar}, values: []}"]
+user=> (json-client/ffetch-json conn ["foo" "bar"])
+{"a" 1 "b" 2 "c" [1 2 3]}
+```
 Copyright © 2016 FIXME
 
 Distributed under the Eclipse Public License either version 1.0 or (at

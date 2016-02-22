@@ -1,7 +1,6 @@
 (ns riak-client.core-test
   (:require [clojure.test :refer :all]
-            [riak-client.core :as riak-client :refer :all]
-            [clojure.reflect :refer :all])
+            [riak-client.core :as riak-client :refer :all])
   (:import [com.basho.riak.client.api.commands.kv FetchValue
                                                   FetchValue$Builder
                                                   FetchValue$Option
@@ -27,13 +26,6 @@
 
 (defn bytes= [bs1 bs2]
   (= (map int bs1) (map int bs2)))
-
-
-(deftest test-wrap-future
-  (testing "wraps the future with another function"
-    (is "foobarbaz"
-        @(#'riak-client/wrap-future (future "barbaz")
-                                    (partial str "foo")))))
 
 
 (deftest test-binary-value

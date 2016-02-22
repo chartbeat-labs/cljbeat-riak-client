@@ -1,4 +1,5 @@
 (ns riak-client.core
+  (:require [riak-client.utils :refer [wrap-future]])
   (:import [clojure.lang Keyword Symbol]
            [com.basho.riak.client.api RiakClient]
            [com.basho.riak.client.api.commands.kv FetchValue$Builder
@@ -18,40 +19,11 @@
 (defn- execute-async [client cmd]
   (.executeAsync client cmd))
 
+
 ;; abstracted for easier testing
 (defn- get-values
   [response]
   (.getValues response RiakObject))
-
-
-(defn- wrap-future
-  "Helper function that wraps a future with a new future which calls f on the
-  future's value."
-  [fut f]
-  (letfn [(deref-future ; ripped from clojure.core
-            ([^java.util.concurrent.Future fut]
-             (.get fut))
-            ([^java.util.concurrent.Future fut timeout-ms timeout-val]
-             (try (.get fut timeout-ms java.util.concurrent.TimeUnit/MILLISECONDS)
-                  (catch java.util.concurrent.TimeoutException e
-                    timeout-val))))]
-    (reify
-      clojure.lang.IDeref
-      (deref [_] (f (deref-future fut)))
-
-      clojure.lang.IBlockingDeref
-      (deref [_ timeout-ms timeout-val]
-        (f (deref-future fut timeout-ms timeout-val)))
-
-      clojure.lang.IPending
-      (isRealized [_] (.isDone fut))
-
-      java.util.concurrent.Future
-      (get [_] (f (.get fut)))
-      (get [_ timeout unit] (f (.get fut timeout unit)))
-      (isCancelled [_] (.isCancelled fut))
-      (isDone [_] (.isDone fut))
-      (cancel [_ interrupt?] (.cancel fut interrupt?)))))
 
 
 (defn- ^BinaryValue binary-value
@@ -72,8 +44,6 @@
       (throw (Exception. (format "Can not create BinaryValue from %s"
                                  (type x)))))))
 
-
-(def STRING_CONTENT_TYPE "text/plain")
 
 (defn ^RiakObject riak-object
   "Creates a RiakObject with optional content-type."
@@ -104,10 +74,9 @@
        [obj]
        (condp instance? obj
          BinaryValue  (if bytes-to-string (.toString obj) (.getValue obj))
-         RiakObject   (if (= (.getContentType obj) STRING_CONTENT_TYPE)
-                        ;; if string contentType, just make it a string
-                        (.toString (.getValue obj))
-                        ;; otherwise, let bytes-to-string decide
+         RiakObject   (condp = (.getContentType obj)
+                        "text/plain"       (.toString (.getValue obj))
+                        "application/json" (.toString (.getValue obj))
                         (-to-clojure (.getValue obj)))
          RiakObject   (-to-clojure (.getValue obj))
          RiakCounter  (.view obj)
@@ -160,7 +129,6 @@
          ;; TODO set options here
          cmd (.build builder)
          fut (execute-async client cmd)]
-     ;(wrap-future fut get-values)))
      (wrap-future fut #(map to-clojure (get-values %)))))
   ([client loc]
    (fetch-async client loc {})))
