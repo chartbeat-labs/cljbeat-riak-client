@@ -1,6 +1,6 @@
-(ns riak-client-test
+(ns riak-client.core-test
   (:require [clojure.test :refer :all]
-            [riak-client :refer :all]
+            [riak-client.core :as riak-client :refer :all]
             [clojure.reflect :refer :all])
   (:import [com.basho.riak.client.api.commands.kv FetchValue
                                                   FetchValue$Builder

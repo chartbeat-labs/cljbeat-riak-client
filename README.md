@@ -8,7 +8,7 @@ A light clojure wrapper around the official Basho Java Riak 2.x client library.
 
 **Connecting**
 ```clojure
-user=> (require 'riak-client)
+user=> (require '[riak-client.core :as riak-client])
 nil
 user=> (def client (riak-client/connect ["host01.sample.com" "host02.sample.com" "host03.sample.com"]))
 #'user/client

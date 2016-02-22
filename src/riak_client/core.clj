@@ -1,4 +1,4 @@
-(ns riak-client
+(ns riak-client.core
   (:import [clojure.lang Keyword Symbol]
            [com.basho.riak.client.api RiakClient]
            [com.basho.riak.client.api.commands.kv FetchValue$Builder
