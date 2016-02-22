@@ -216,7 +216,7 @@
 
   Optional:
     - options, map: exposes underlying StoreValue options via a map of keywords.
-    see: http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/FetchValue.Option.html"
+    see: http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/StoreValue.Option.html"
   ([client loc store-value options]
    (let [riak-obj (riak-object store-value)
          builder (StoreValue$Builder. riak-obj)
@@ -239,7 +239,7 @@
 
   Optional:
     - options, map: exposes underlying StoreValue options via a map of keywords.
-    see: http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/FetchValue.Option.html"
+    see: http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/StoreValue.Option.html"
   ([client loc store-value options]
    @(store-async client loc store-value options))
   ([client loc store-value]

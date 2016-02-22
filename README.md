@@ -63,6 +63,27 @@ use the convenience functions `ffetch` and `ffetch-async` which are equivalent
 to calling `(first (fetch ...))`.
 
 
+### Options
+
+Each fetch, store, and delete function supports the options for FetchValue,
+StoreValue, and DeleteValue respectively as optional maps of keyword arguments
+and correctly typed values. _Types are handled poorly right now, some casting
+required..._
+
+```
+bar=> (r/ffetch conn ["foo" "bar"] {:TIMEOUT (int 100)})
+"hello world"
+bar=> (r/ffetch conn ["foo" "bar"] {:TIMEOUT (int 0)})
+...
+java.util.concurrent.ExecutionException: com.basho.riak.client.core.netty.RiakResponseException: timeout
+```
+
+see:
+  http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/DeleteValue.Option.html
+  http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/StoreValue.Option.html
+  http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/FetchValue.Option.html
+
+
 ### Aysnc
 
 The Java Riak API exposes an async API which returns futures. Under the hood, in
