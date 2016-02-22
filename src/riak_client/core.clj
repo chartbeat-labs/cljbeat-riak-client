@@ -2,9 +2,13 @@
   (:require [riak-client.utils :refer [wrap-future]])
   (:import [clojure.lang Keyword Symbol]
            [com.basho.riak.client.api RiakClient]
+           [com.basho.riak.client.api.cap Quorum]
            [com.basho.riak.client.api.commands.kv FetchValue$Builder
+                                                  FetchValue$Option
                                                   StoreValue$Builder
-                                                  DeleteValue$Builder]
+                                                  StoreValue$Option
+                                                  DeleteValue$Builder
+                                                  DeleteValue$Option]
            [com.basho.riak.client.core.util BinaryValue]
            [com.basho.riak.client.core.query Namespace Location]
            [com.basho.riak.client.core.query RiakObject]
@@ -114,6 +118,21 @@
   (RiakClient/newClient hosts))
 
 
+(def ^:private FETCH_OPTIONS_MAP
+  "Mapping from keywords to underlying FetchValue options.
+  see: http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/FetchValue.Option.html"
+  {:R              FetchValue$Option/R
+   :PR             FetchValue$Option/PR
+   :BASIC_QUORUM   FetchValue$Option/BASIC_QUORUM
+   :NOTFOUND_OK    FetchValue$Option/NOTFOUND_OK
+   :IF_MODIFIED    FetchValue$Option/IF_MODIFIED
+   :HEAD           FetchValue$Option/HEAD
+   :DELETED_VCLOCK FetchValue$Option/DELETED_VCLOCK
+   :TIMEOUT        FetchValue$Option/TIMEOUT
+   :SLOPPY_QUORUM  FetchValue$Option/SLOPPY_QUORUM
+   :N_VAL          FetchValue$Option/N_VAL})
+
+
 (defn fetch-async
   "Asynchronous fetch from riak. Returns a future that when derefed will contain
   a sequence of resulting siblings from the request.
@@ -123,10 +142,12 @@
     - loc, vector: see parse-loc-vector
 
   Optional:
-    - options, map: TODO"
+    - options, map: exposes underlying FetchValue options via a map of keywords.
+      see: http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/FetchValue.Option.html"
   ([client loc options]
    (let [builder (FetchValue$Builder. (parse-loc-vec loc))
-         ;; TODO set options here
+         builder (reduce (fn [b [k v]] (.withOption b (FETCH_OPTIONS_MAP k) v))
+                         builder options)
          cmd (.build builder)
          fut (execute-async client cmd)]
      (wrap-future fut #(map to-clojure (get-values %)))))
@@ -143,7 +164,8 @@
     - loc, vector: see parse-loc-vector
 
   Optional:
-    - options, map: TODO"
+    - options, map: exposes underlying FetchValue options via a map of keywords.
+      see: http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/FetchValue.Option.html"
   ([client loc options]
    @(fetch-async client loc options))
   ([client loc]
@@ -168,6 +190,22 @@
    (ffetch client loc {})))
 
 
+(def ^:private STORE_OPTIONS_MAP
+  "Mapping from keywords to underlying StoreValue options.
+  see: http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/FetchValue.Option.html"
+  {:W               StoreValue$Option/W
+   :DW              StoreValue$Option/DW
+   :PW              StoreValue$Option/PW
+   :IF_NOT_MODIFIED StoreValue$Option/IF_NOT_MODIFIED
+   :IF_NONE_MATCH   StoreValue$Option/IF_NONE_MATCH
+   :RETURN_BODY     StoreValue$Option/RETURN_BODY
+   :RETURN_HEAD     StoreValue$Option/RETURN_HEAD
+   :TIMEOUT         StoreValue$Option/TIMEOUT
+   :ASIS            StoreValue$Option/ASIS
+   :SLOPPY_QUORUM   StoreValue$Option/SLOPPY_QUORUM
+   :N_VAL           StoreValue$Option/N_VAL})
+
+
 (defn store-async
   "Stores binary value or RiakObject at location loc. Returns a future.
 
@@ -177,12 +215,14 @@
     - store-value, binary OR RiakObject (to make, see: riak-object)
 
   Optional:
-    - options, map: TODO"
+    - options, map: exposes underlying StoreValue options via a map of keywords.
+    see: http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/FetchValue.Option.html"
   ([client loc store-value options]
    (let [riak-obj (riak-object store-value)
          builder (StoreValue$Builder. riak-obj)
          builder (.withLocation builder (parse-loc-vec loc))
-         ;; TODO set options here
+         builder (reduce (fn [b [k v]] (.withOption b (STORE_OPTIONS_MAP k) v))
+                         builder options)
          cmd (.build builder)]
      (execute-async client cmd)))
   ([client loc store-value]
@@ -198,11 +238,26 @@
     - store-value, binary OR RiakObject
 
   Optional:
-    - options, map: TODO"
+    - options, map: exposes underlying StoreValue options via a map of keywords.
+    see: http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/FetchValue.Option.html"
   ([client loc store-value options]
    @(store-async client loc store-value options))
   ([client loc store-value]
    (store client loc store-value {})))
+
+
+(def ^:private DELETE_OPTIONS_MAP
+  "Mapping from keywords to underlying DeleteValue options.
+  see: http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/DeleteValue.Option.html"
+  {:RW            DeleteValue$Option/RW
+   :R             DeleteValue$Option/R
+   :W             DeleteValue$Option/W
+   :PR            DeleteValue$Option/PR
+   :PW            DeleteValue$Option/PW
+   :DW            DeleteValue$Option/DW
+   :TIMEOUT       DeleteValue$Option/TIMEOUT
+   :SLOPPY_QUORUM DeleteValue$Option/SLOPPY_QUORUM
+   :N_VAL         DeleteValue$Option/N_VAL})
 
 
 (defn delete-async
@@ -213,10 +268,12 @@
   - loc, vector: see parse-loc-vector
 
   Optional:
-  - options, map: TODO"
+    - options, map: exposes underlying DeleteValue options via a map of keywords.
+    see: http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/DeleteValue.Option.html"
   ([client loc options]
    (let [builder (DeleteValue$Builder. (parse-loc-vec loc))
-         ;; TODO set options here
+         builder (reduce (fn [b [k v]] (.withOption b (DELETE_OPTIONS_MAP k) v))
+                         builder options)
          cmd (.build builder)]
      (execute-async client cmd)))
   ([client loc]
@@ -231,7 +288,8 @@
   - loc, vector: see parse-loc-vector
 
   Optional:
-  - options, map: TODO"
+    - options, map: exposes underlying DeleteValue options via a map of keywords.
+    see: http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/DeleteValue.Option.html"
   ([client loc options]
    @(delete-async client loc options))
   ([client loc]

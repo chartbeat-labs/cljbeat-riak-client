@@ -133,14 +133,16 @@
                   (fn [response]
                     [(.. (RiakObject.)
                          (setValue (BinaryValue/create "hello world")))])]
-      (let [fut (fetch-async :mock-client ["foo" "bar" "baz"])
+      (let [fut (fetch-async :mock-client ["foo" "bar" "baz"] {:TIMEOUT 1000})
             res @fut
             cmd @executed-cmd]
 
         (testing "executed correct fetch command"
-          (is (= (.build (FetchValue$Builder.
+          (is (= (.. (FetchValue$Builder.
                            (Location. (Namespace. "foo" "bar")
-                                      (BinaryValue/create "baz"))))
+                                      (BinaryValue/create "baz")))
+                     (withOption FetchValue$Option/TIMEOUT 1000)
+                     (build))
                  cmd)))
 
         (testing "returned the correct value"
@@ -167,13 +169,15 @@
                   (fn [response]
                     [(.. (RiakObject.)
                          (setValue (BinaryValue/create "hello world")))])]
-      (let [res (fetch :mock-client ["foo" "bar" "baz"])
+      (let [res (fetch :mock-client ["foo" "bar" "baz"] {:TIMEOUT 1000})
             cmd @executed-cmd]
 
         (testing "executed correct fetch command"
-          (is (= (.build (FetchValue$Builder.
+          (is (= (.. (FetchValue$Builder.
                            (Location. (Namespace. "foo" "bar")
-                                      (BinaryValue/create "baz"))))
+                                      (BinaryValue/create "baz")))
+                     (withOption FetchValue$Option/TIMEOUT 1000)
+                     (build))
                  cmd)))
 
         (testing "returned the correct value"
@@ -198,7 +202,8 @@
                     (future :mock-resp))]
       (let [store-val (.. (RiakObject.)
                           (setValue (BinaryValue/create "hello world")))
-            fut (store-async :mock-client ["foo" "bar" "baz"] store-val)
+            fut (store-async :mock-client ["foo" "bar" "baz"] store-val
+                             {:TIMEOUT 1000})
             _ @fut
             cmd @executed-cmd]
 
@@ -206,6 +211,7 @@
           (is (= (.. (StoreValue$Builder. store-val)
                      (withLocation (Location. (Namespace. "foo" "bar")
                                               (BinaryValue/create "baz")))
+                     (withOption StoreValue$Option/TIMEOUT 1000)
                      (build))
                  cmd)))))))
 
@@ -218,13 +224,14 @@
                     (future :mock-resp))]
       (let [store-val (.. (RiakObject.)
                           (setValue (BinaryValue/create "hello world")))
-            _ (store :mock-client ["foo" "bar" "baz"] store-val)
+            _ (store :mock-client ["foo" "bar" "baz"] store-val {:TIMEOUT 1000})
             cmd @executed-cmd]
 
         (testing "executed correct store command"
           (is (= (.. (StoreValue$Builder. store-val)
                      (withLocation (Location. (Namespace. "foo" "bar")
                                               (BinaryValue/create "baz")))
+                     (withOption StoreValue$Option/TIMEOUT 1000)
                      (build))
                  cmd)))))))
 
@@ -235,14 +242,16 @@
                   (fn [client cmd]
                     (reset! executed-cmd cmd)
                     (future :mock-resp))]
-      (let [fut (delete-async :mock-client ["foo" "bar" "baz"])
+      (let [fut (delete-async :mock-client ["foo" "bar" "baz"] {:TIMEOUT 1000})
             _ @fut
             cmd @executed-cmd]
 
         (testing "executed correct delete command"
-          (is (= (.build (DeleteValue$Builder.
-                           (Location. (Namespace. "foo" "bar")
-                                      (BinaryValue/create "baz"))))
+          (is (= (.. (DeleteValue$Builder.
+                       (Location. (Namespace. "foo" "bar")
+                                  (BinaryValue/create "baz")))
+                     (withOption DeleteValue$Option/TIMEOUT 1000)
+                     (build))
                  cmd)))))))
 
 
@@ -252,12 +261,14 @@
                   (fn [client cmd]
                     (reset! executed-cmd cmd)
                     (future :mock-resp))]
-      (let [_ (delete :mock-client ["foo" "bar" "baz"])
+      (let [_ (delete :mock-client ["foo" "bar" "baz"] {:TIMEOUT 1000})
             cmd @executed-cmd]
 
         (testing "executed correct delete command"
-          (is (= (.build (DeleteValue$Builder.
-                           (Location. (Namespace. "foo" "bar")
-                                      (BinaryValue/create "baz"))))
+          (is (= (.. (DeleteValue$Builder.
+                       (Location. (Namespace. "foo" "bar")
+                                  (BinaryValue/create "baz")))
+                     (withOption DeleteValue$Option/TIMEOUT 1000)
+                     (build))
                  cmd)))))))
 
