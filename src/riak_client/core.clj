@@ -57,6 +57,9 @@
      RiakObject value
      ;; if it's a String, set the contentType so it comes back out as a string
      java.lang.String (riak-object value "text/plain")
+     ;; if it's Serializable (like all core clojure data structures are), serialize it
+     java.io.Serializable
+
      ;; otherwise, just use the default contentType
      (riak-object value RiakObject/DEFAULT_CONTENT_TYPE)))
   ([value content-type]
@@ -81,6 +84,7 @@
          RiakObject   (condp = (.getContentType obj)
                         "text/plain"       (.toString (.getValue obj))
                         "application/json" (.toString (.getValue obj))
+                        "application/edn"  (.toString (.getValue obj))
                         (-to-clojure (.getValue obj)))
          RiakObject   (-to-clojure (.getValue obj))
          RiakCounter  (.view obj)

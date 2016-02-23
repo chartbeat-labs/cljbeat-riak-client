@@ -104,3 +104,20 @@ user=> (json-client/store-json conn ["foo" "bar"] {:a 1 :b 2 :c [1 2 3]})
 user=> (json-client/ffetch-json conn ["foo" "bar"])
 {"a" 1 "b" 2 "c" [1 2 3]}
 ```
+
+
+### EDN (Experimental)
+
+A light EDN wrapper using clojure.edn is exposed via `riak-client.edn`. This
+allows storing abitrary clojure collections via `clojure.core.pr-str` and
+`clojure.edn.read-string`.
+
+[more about edn](https://github.com/edn-format/edn)
+
+```clojure
+user=> (require '[riak-client.edn :as edn-client])
+user=> (edn-client/store-edn conn ["foo" "bar"] {:a 1 :b true :c nil :d [1 2 3] :e #{:a :b :c}})
+#object[com.basho.riak.client.api.commands.kv.StoreValue$Response 0x5ceb4a29 "{location: {namespace: {type: default, bucket: foo}, key: bar}, values: []}"]
+user=> (edn-client/ffetch-edn conn ["foo" "bar"])
+{:a 1 :b true :c nil :d [1 2 3] :e #{:a :b :c}}
+```
