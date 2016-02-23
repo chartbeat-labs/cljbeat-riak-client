@@ -79,9 +79,9 @@ java.util.concurrent.ExecutionException: com.basho.riak.client.core.netty.RiakRe
 ```
 
 see:
-  http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/DeleteValue.Option.html
-  http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/StoreValue.Option.html
-  http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/FetchValue.Option.html
+* http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/DeleteValue.Option.html
+* http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/StoreValue.Option.html
+* http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/FetchValue.Option.html
 
 
 ### Aysnc
